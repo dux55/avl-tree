@@ -12,7 +12,6 @@ class avl{
         
 	int64_t get_height(const Node<std::pair<T, U>>* curr){
 	    if(curr == nullptr) return -1;
-
 	    return curr->height;
 	}
 	void calc_height(Node<std::pair<T, U>>* curr){
@@ -27,7 +26,6 @@ class avl{
 	    Node<std::pair<T, U>>* curr = this->root;
             while(curr != nullptr){
                 prev = curr;
-                
                 if(key < curr->val.first) curr = curr->left;
                 else curr = curr->right;
             }
@@ -43,7 +41,6 @@ class avl{
 
 	    if(curr->val.first < prev->val.first) prev->left = curr;
 	    else prev->right = curr;
-
 	    curr->parent = prev;
 	}
 
@@ -103,7 +100,7 @@ class avl{
 	    for(auto [key, val] : values) this->insert(key, val);
 	}
 
-	Node<std::pair<T, U>>* insert(T key, U val){
+	Node<std::pair<T, U>>* insert(const T key, const U val){
             Node<std::pair<T, U>>* prev = find(key);
             Node<std::pair<T, U>>* curr = new Node<std::pair<T, U>>({key, val});
 	    add_node(prev, curr);
@@ -118,7 +115,6 @@ class avl{
 		    if(par_ptr != nullptr && par_ptr->left == ptr) par_ptr->left = right_rotation(ptr);
 		    else if(par_ptr != nullptr && par_ptr->right == ptr) par_ptr->right = right_rotation(ptr);
 		    else right_rotation(ptr);
-                    
                 }
 		else if(balance_factor < -1){ 
                     if(key < ptr->right->val.first) ptr->right = right_rotation(ptr->right);
@@ -142,10 +138,9 @@ class avl{
 	}
 
 	U& operator[](const T key){
-	    if(!exists(key)) insert(key, {});
+	    if(!exists(key)) return insert(key, {})->val.second;
 	    return find(key)->val.second;
 	}
-
 
 
         std::vector<T> dbg_traverse(){
@@ -159,7 +154,7 @@ class avl{
                     curr = curr->left;
                 }
         
-                curr = s.top();
+                curr = s.back();
                 traversal.push_back(curr->val.first);
                 curr = curr->right;
                 s.pop_back();
