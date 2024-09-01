@@ -127,12 +127,12 @@ class avl{
 	avl(){
             this->root = nullptr;
         }
-        avl(avl& avl){
+        avl(avl& avl_param){
 	    this->root = nullptr;
 
 	    std::vector<std::pair<T, U>> values;
             std::vector<Node<std::pair<T, U>>*> s;
-	    s.push_back(avl.root);
+	    s.push_back(avl_param.root);
             while(!s.empty()){
 		Node<std::pair<T, U>>* curr = s.back();
 		s.pop_back();
@@ -230,9 +230,9 @@ class avl_iterator{
 	avl_iterator(avl<T, U>& tree_param) : tree(tree_param){
 	    ptr = tree.begin();
 	}
-	avl_iterator(avl_iterator& avl_iterator){
-	    ptr = avl_iterator.ptr;
-	    tree = avl_iterator.tree;
+	avl_iterator(avl_iterator& avl_iterator_param){
+	    ptr = avl_iterator_param.ptr;
+	    tree = avl_iterator_param.tree;
 	}
 
 	void begin(){
