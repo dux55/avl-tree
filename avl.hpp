@@ -3,6 +3,7 @@
 
 #include "lib/node.hpp"
 #include <cstdint>
+#include <cassert>
 #include <vector>
 
 template <typename T, typename U>
@@ -76,6 +77,52 @@ class avl{
 	    
 	    return new_root;
 	}
+
+	Node<std::pair<T, U>>* begin(){
+	    if(this->root == nullptr) return nullptr;
+	    
+	    Node<std::pair<T, U>>* curr = this->root;
+	    while(curr->left != nullptr) curr = curr->left;
+
+	    return curr;
+	}
+	Node<std::pair<T, U>>* end(){
+	    if(this->root == nullptr) return nullptr;
+	    
+	    Node<std::pair<T, U>>* curr = this->root;
+	    while(curr->right != nullptr) curr = curr->right;
+
+	    return curr;
+	}
+
+	Node<std::pair<T, U>>* lower_bound(T key){
+	    Node<std::pair<T, U>>* sol = nullptr;
+	    Node<std::pair<T, U>>* curr = this->root;
+            
+	    while(curr != nullptr){
+                if(key > curr->val.first){
+		    sol = curr;
+		    curr = curr->right;
+		}
+                else curr = curr->left;
+            }
+        
+            return sol;
+	}
+	Node<std::pair<T, U>>* upper_bound(T key){
+	    Node<std::pair<T, U>>* sol = nullptr;
+	    Node<std::pair<T, U>>* curr = this->root;
+            
+	    while(curr != nullptr){
+                if(key < curr->val.first){
+		    sol = curr;
+		    curr = curr->left;
+		}
+                else curr = curr->right;
+	    }
+
+            return sol;
+	}
     public:
 	avl(){
             this->root = nullptr;
@@ -97,7 +144,10 @@ class avl{
                 s.push_back(curr->right);
             }
 
-	    for(auto [key, val] : values) this->insert(key, val);
+	    for(auto [key, val] : values) insert(key, val);
+	}
+	~avl(){
+	    clear();
 	}
 
 	Node<std::pair<T, U>>* insert(const T key, const U val){
@@ -142,31 +192,92 @@ class avl{
 	    return find(key)->val.second;
 	}
 
+	void clear(){
+	    if(this->root == nullptr) return;
 
-        std::vector<T> dbg_traverse(){
-            std::vector<T> traversal;
-        
-            Node<std::pair<T, U>>* curr = this->root;
-            std::vector<Node<std::pair<T, U>>*> s;
-            while(curr != nullptr || !s.empty()){
-                while(curr != nullptr){
-                    s.push_back(curr);
-                    curr = curr->left;
-                }
-        
-                curr = s.back();
-                traversal.push_back(curr->val.first);
-                curr = curr->right;
-                s.pop_back();
-            }
-            
-            return traversal;
-        }
+	    std::vector<Node<std::pair<T, U>>*> s1;
+	    s1.push_back(this->root);
+	    std::vector<Node<std::pair<T, U>>*> s2;
+	    while(!s1.empty()){
+		Node<std::pair<T, U>>* curr = s1.back();
+		s1.pop_back();
+
+		s2.push_back(curr);
+		if(curr->left != nullptr) s1.push_back(curr->left);
+		if(curr->right != nullptr) s1.push_back(curr->right);
+	    }
+
+	    while(!s2.empty()){
+		Node<std::pair<T, U>>* curr = s2.back();
+		s2.pop_back();
+		delete curr;
+	    }
+	    this->root = nullptr;
+	}
+		
+	template <typename, typename>
+	friend class avl_iterator;
+};
+
+
+template <typename T, typename U>
+class avl_iterator{
+    private:
+	avl<T, U>& tree;
+	Node<std::pair<T, U>>* ptr;
+    public:
+	avl_iterator() = delete;
+	avl_iterator(avl<T, U>& tree_param) : tree(tree_param){
+	    ptr = tree.begin();
+	}
+	avl_iterator(avl_iterator& avl_iterator){
+	    ptr = avl_iterator.ptr;
+	    tree = avl_iterator.tree;
+	}
+
+	void begin(){
+	    ptr = tree.begin();
+	}
+	void end(){
+	    ptr = tree.end();
+	}
+	
+	std::pair<T, U> operator*(){
+	    assert(tree.root != nullptr);
+	    return ptr->val;
+	}
+	
+	std::pair<T, U> operator++(){
+	    assert(tree.root != nullptr);
+	    ptr = tree.upper_bound(ptr->val.first);
+	    if(ptr == nullptr) ptr = tree.begin();
+
+	    return ptr->val;
+	}
+	std::pair<T, U> operator--(){
+	    assert(tree.root != nullptr);
+	    ptr = tree.lower_bound(ptr->val.first);
+	    if(ptr == nullptr) ptr = tree.end();
+
+	    return ptr->val;
+	}
+
+	std::pair<T, U> operator++(int){
+	    assert(tree.root != nullptr);
+	    std::pair<T, U> tmp = ptr->val;
+	    ptr = tree.upper_bound(ptr->val.first);
+	    if(ptr == nullptr) ptr = tree.begin();
+
+	    return tmp;
+	}
+	std::pair<T, U> operator--(int){
+	    assert(tree.root != nullptr);
+	    std::pair<T, U> tmp = ptr->val;
+	    ptr = tree.lower_bound(ptr->val.first);
+	    if(ptr == nullptr) ptr = tree.end();
+
+	    return tmp;
+	}
 };
 
 #endif
-
-/*
-TODO:
-iterator class(begin, end)
-*/
